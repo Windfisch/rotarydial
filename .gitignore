@@ -9,3 +9,11 @@ main.s
 main.sym
 obj
 contrib
+*.i
+*.s
+*.map
+*.lss
+*.sym
+*.elf
+*.hex
+*.eep
