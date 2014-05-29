@@ -116,7 +116,7 @@ void buildReport(int n)
 {
 	keyboard_report.modifier = 0;
 
-	if (n > 0 && n <= 9)
+	if (n > 0 && n <= 10)
 		keyboard_report.keycode[0] = 29+n;
 	else if (n == 0)
 		keyboard_report.keycode[0] = 39;
@@ -138,8 +138,20 @@ void jump_to_bootloader(void)
 }
 
 
+#define DEBOUNCE_MAX 100
+uint8_t idle_stable = 42;
+uint8_t pulse_stable = 42;
+uint16_t idlectr = DEBOUNCE_MAX;
+uint16_t pulsectr = DEBOUNCE_MAX;
+
+uint8_t oldidle = 42;
+uint8_t oldpulse = 42;
+
 int main()
 {
+	int key_to_send;
+	int n_pulses = 0;
+
 	uchar i, button_release_counter = 0, state = STATE_WAIT;
 
 	DDRC = 0x38;   // LEDs as output
@@ -170,48 +182,99 @@ int main()
 	sei();						// Enable interrupts after re-enumeration
 	uint32_t j;
 
-	for (uint32_t i = 0; i < 300000; i++)
+	for (uint32_t i = 0; i < 4000000; i++)
 	{
 		wdt_reset();			// keep the watchdog happy
 		usbPoll();
 
-		if (i % 5000 == 0)
-		{						// button pressed (PB1 at ground voltage)
-			PORTC ^= LED_GREEN;
-			// also check if some time has elapsed since last button press
-			if (state == STATE_WAIT && button_release_counter == 255)
-				state = STATE_SEND_KEY;
-
-			button_release_counter = 0;	// now button needs to be released a while until retrigger
-		}
-
-		if (button_release_counter < 255)
-			button_release_counter++;	// increase release counter
 
 		// characters are sent when messageState == STATE_SEND and after receiving
 		// the initial LED state from PC (good way to wait until device is recognized)
+		
+		int idle = (PINB & 0x10);
+		int pulse = (PINB & 0x20);
 
-		if (state == STATE_WAIT)
-			j++;
+		if (idle != idle_stable)
+		{
+			idlectr++;
+			if (idlectr > DEBOUNCE_MAX)
+				idle_stable = idle;
+		}
+		else
+			idlectr=0;
+		
+		if (pulse != pulse_stable)
+		{
+			pulsectr++;
+			if (pulsectr > DEBOUNCE_MAX)
+				pulse_stable = pulse;
+		}
+		else
+			pulsectr=0;
 
-		if (PINB & 0x20)
+		if (pulse_stable)
 			PORTC &= ~LED_RED;
 		else
-			PORTC |= LED_RED;
+			PORTC |= LED_RED; 
 
-		if (PINB & 0x10)
+		if (idle_stable)
 			PORTC |= LED_GREEN;
 		else
 			PORTC &= ~LED_GREEN;
 
+/*		if (idle)
+			PORTC |= LED_GREEN;
+		else
+			PORTC &= ~LED_GREEN; */
+
+		if (oldidle == 42) // init
+		{
+			oldidle = idle_stable;
+			oldpulse = pulse_stable;
+		}
+
+		if (oldidle && !idle_stable)
+			n_pulses = 0;
+
+		if (!oldidle == 0 && idle_stable)
+		{
+			if (n_pulses > 17)
+				jump_to_bootloader();
+
+			// also check if some time has elapsed since last button press
+			if (state == STATE_WAIT && button_release_counter == 255)
+			{
+				state = STATE_SEND_KEY;
+				key_to_send = n_pulses;
+			}
+
+			button_release_counter = 0;	// now button needs to be released a while until retrigger
+
+		}
+
+		if (!oldpulse && pulse_stable)
+			n_pulses++;
+
+		oldidle = idle_stable;
+		oldpulse = pulse_stable;
+
+		
+		if (button_release_counter < 255)
+			button_release_counter++;	// increase release counter
+			
+		
+		
 		if (usbInterruptIsReady() && state != STATE_WAIT && LED_state != 0xff)
 		{
 			switch (state)
 			{
 				case STATE_SEND_KEY:
-					buildReport(2);
-					state = STATE_RELEASE_KEY;	// release next
-					PORTC &= ~LED_BLUE;
+					if (key_to_send>=1 && key_to_send <=10)
+					{
+						buildReport(key_to_send);
+						state = STATE_RELEASE_KEY;	// release next
+						PORTC &= ~LED_BLUE;
+					}
 					break;
 				
 				case STATE_RELEASE_KEY:
