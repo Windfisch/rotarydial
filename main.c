@@ -244,8 +244,11 @@ int main()
 			// also check if some time has elapsed since last button press
 			if (state == STATE_WAIT && button_release_counter == 255)
 			{
-				state = STATE_SEND_KEY;
-				key_to_send = n_pulses;
+				if (n_pulses >= 1 && n_pulses <=10)
+				{
+					state = STATE_SEND_KEY;
+					key_to_send = n_pulses;
+				}
 			}
 
 			button_release_counter = 0;	// now button needs to be released a while until retrigger
@@ -269,12 +272,9 @@ int main()
 			switch (state)
 			{
 				case STATE_SEND_KEY:
-					if (key_to_send>=1 && key_to_send <=10)
-					{
-						buildReport(key_to_send);
-						state = STATE_RELEASE_KEY;	// release next
-						PORTC &= ~LED_BLUE;
-					}
+					buildReport(key_to_send);
+					state = STATE_RELEASE_KEY;	// release next
+					PORTC &= ~LED_BLUE;
 					break;
 				
 				case STATE_RELEASE_KEY:
