@@ -182,7 +182,7 @@ int main()
 	sei();						// Enable interrupts after re-enumeration
 	uint32_t j;
 
-	for (uint32_t i = 0; i < 4000000; i++)
+	while (1)
 	{
 		wdt_reset();			// keep the watchdog happy
 		usbPoll();
