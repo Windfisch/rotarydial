@@ -1,10 +1,28 @@
-/**
- * Project: AVR ATtiny USB Tutorial at http://codeandlife.com/
- * Author: Joonas Pihlajamaa, joonas.pihlajamaa@iki.fi
- * Base on V-USB example code by Christian Starkjohann
- * Copyright: (c) 2008 by OBJECTIVE DEVELOPMENT Software GmbH
- * License: GNU GPL v3 (see License.txt)
- */
+/*
+    Project: Rotary-Dial-To-USB Interface
+    Author: Florian Jung (flo@windfisch.org)
+    Copyright: (c) 2014 by Florian Jung and partially others (see below)
+    License: GNU GPL v3 (see LICENSE)
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License version 3 as 
+    published by the Free Software Foundation.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+    This project is based on the code for the AVR ATtiny USB Tutorial at
+    http://codeandlife.com/ by Joonas Pihlajamaa, joonas.pihlajamaa@iki.fi,
+    which is in turn based on the V-USB example code by Christian Starkjohann
+    (Copyright: (c) 2008 by OBJECTIVE DEVELOPMENT Software GmbH)
+*/
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
@@ -65,6 +83,7 @@ typedef struct
 static keyboard_report_t keyboard_report;	// sent to PC
 volatile static uchar LED_state = 0xff;	// received from PC
 static uchar idleRate;			// repeat rate for keyboards
+
 
 #define LED_BLUE (1<<5)
 #define LED_RED (1<<4)
@@ -222,10 +241,6 @@ int main()
 		else
 			PORTC &= ~LED_GREEN;
 
-/*		if (idle)
-			PORTC |= LED_GREEN;
-		else
-			PORTC &= ~LED_GREEN; */
 
 		if (oldidle == 42) // init
 		{
