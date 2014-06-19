@@ -1,6 +1,6 @@
 This is a Rotary-Dial-to-USB-Interface, based on the USB AVR Lab
-(http://www.ullihome.de/wiki/USBAVRLab/index). For schematics,
-see http://www.ullihome.de/wiki/USBAVRLab/Download
+(http://www.ullihome.de/wiki/USBAVRLab/index). For the schematics
+of the USB AVR Lab, see http://www.ullihome.de/wiki/USBAVRLab/Download
 
 This is a tiny board with an ATMEGA8 speaking USB using the V-USB
 library. It features a 10-pin-port with some AVR pins routed out,
