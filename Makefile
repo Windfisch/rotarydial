@@ -368,13 +368,16 @@ ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
 # Default target.
 all: begin directories gccversion sizebefore build sizeafter end
 
-directories: .dep obj
+directories: .dep obj obj/usbdrv
 
 .dep:
 	mkdir .dep
 
 obj:
 	mkdir obj
+
+obj/usbdrv: obj
+	mkdir obj/usbdrv
 
 # Change the build target to build a HEX file or a library.
 build: elf hex eep lss sym
